@@ -13,8 +13,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { projectTitle } from '@/lib/project-join'
 
-export default async function TimeTrackingPage() {
+export default async function TimeTrackingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const { error: queryError } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -50,6 +56,12 @@ export default async function TimeTrackingPage() {
         <h2 className="text-3xl font-bold tracking-tight">Time Tracking</h2>
         <p className="text-slate-600">Log billable hours against your active projects.</p>
       </div>
+
+      {queryError && (
+        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {queryError}
+        </p>
+      )}
 
       {/* Creation Form */}
       <Card>
@@ -122,7 +134,7 @@ export default async function TimeTrackingPage() {
                 <TableRow key={entry.id}>
                   <TableCell className="font-medium">{entry.date}</TableCell>
                   {/* We access the joined project title like this: */}
-                  <TableCell>{entry.projects?.title || 'Unknown Project'}</TableCell>
+                  <TableCell>{projectTitle(entry.projects)}</TableCell>
                   <TableCell className="text-slate-500">{entry.description || '-'}</TableCell>
                   <TableCell className="text-right font-semibold">{entry.duration_hours}</TableCell>
                 </TableRow>

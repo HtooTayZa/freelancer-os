@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Briefcase, Clock, DollarSign, Receipt } from 'lucide-react'
+import { projectTitle } from '@/lib/project-join'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -117,7 +118,7 @@ export default async function DashboardPage() {
               ) : (
                 recentInvoices.map((invoice) => (
                   <TableRow key={invoice.id}>
-                    <TableCell className="font-medium">{invoice.projects?.title || 'Unknown'}</TableCell>
+                    <TableCell className="font-medium">{projectTitle(invoice.projects)}</TableCell>
                     <TableCell>${Number(invoice.amount).toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge variant={invoice.status === 'paid' ? 'default' : invoice.status === 'sent' ? 'secondary' : 'outline'}>

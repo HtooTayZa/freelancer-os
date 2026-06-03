@@ -35,10 +35,11 @@ A Next.js dashboard for managing freelance projects, built with Supabase Auth an
 
 ## Project structure
 
-- `app/` — Next.js App Router pages and server actions
+- `app/` — pages, server actions, and API routes (e.g. invoice PDFs)
 - `components/ui/` — shadcn/ui components
-- `supabase/migrations/` — SQL schema for Supabase
-- `utils/supabase/` — Supabase client helpers for server, client, and middleware
+- `lib/` — shared utilities
+- `supabase/migrations/` — SQL schema for Supabase (run in order; see `supabase/README.md`)
+- `utils/supabase/` — Supabase server client and session middleware
 
 ## Scripts
 

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Download } from 'lucide-react'
 import {
   Table,
   TableBody,
@@ -14,8 +15,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { projectTitle } from '@/lib/project-join'
 
-export default async function InvoicesPage() {
+export default async function InvoicesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>
+}) {
+  const { error: queryError } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -52,6 +59,12 @@ export default async function InvoicesPage() {
         <h2 className="text-3xl font-bold tracking-tight">Invoices</h2>
         <p className="text-slate-600">Bill your clients and track payments.</p>
       </div>
+
+      {queryError && (
+        <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {queryError}
+        </p>
+      )}
 
       {/* Creation Form */}
       <Card>
@@ -127,12 +140,13 @@ export default async function InvoicesPage() {
               <TableHead>Amount</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Due Date</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {!invoices || invoices.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-slate-500 py-8">
+                <TableCell colSpan={6} className="text-center text-slate-500 py-8">
                   No invoices created yet.
                 </TableCell>
               </TableRow>
@@ -140,7 +154,7 @@ export default async function InvoicesPage() {
               invoices.map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell>{invoice.issue_date}</TableCell>
-                  <TableCell className="font-medium">{invoice.projects?.title || 'Unknown Project'}</TableCell>
+                  <TableCell className="font-medium">{projectTitle(invoice.projects)}</TableCell>
                   <TableCell>${invoice.amount.toFixed(2)}</TableCell>
                   <TableCell>
                     <Badge variant={
@@ -151,6 +165,13 @@ export default async function InvoicesPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right text-slate-500">{invoice.due_date}</TableCell>
+                  <TableCell>
+                    <a href={`/api/invoices/${invoice.id}/pdf`} target="_blank" rel="noopener noreferrer">
+                    <Button variant="ghost" size="icon">
+                        <Download className="h-4 w-4 text-slate-500 hover:text-slate-900" />
+                    </Button>
+                    </a>
+                </TableCell>
                 </TableRow>
               ))
             )}
