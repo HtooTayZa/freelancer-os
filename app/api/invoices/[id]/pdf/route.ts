@@ -36,9 +36,9 @@ export async function GET(
   const pdfBytes = await new Promise<Uint8Array>((resolve, reject) => {
     // Set standard A4 paper size with clean margins
     const doc = new PDFDocument({ size: 'A4', margin: 50 })
-    const buffers: any[] = []
+    const buffers: Uint8Array[] = []
     
-    doc.on('data', buffers.push.bind(buffers))
+    doc.on('data', (chunk: Uint8Array) => buffers.push(chunk))
     doc.on('end', () => {
       const pdfData = Buffer.concat(buffers)
       resolve(new Uint8Array(pdfData)) 
