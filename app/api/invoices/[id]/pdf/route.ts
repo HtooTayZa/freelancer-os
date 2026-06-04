@@ -2,36 +2,30 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import PDFDocument from 'pdfkit'
 
+// Force Next.js to use the Node environment
 export const runtime = 'nodejs'
 
-type ProjectJoin = { title: string; client_name: string }
-
-function getProject(projects: ProjectJoin | ProjectJoin[] | null): ProjectJoin | null {
-  if (!projects) return null
-  return Array.isArray(projects) ? projects[0] ?? null : projects
-}
-
 export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> } // 1. Tell TypeScript it is a Promise
 ) {
-  const { id } = await params
+  const params = await context.params // 2. Await the Promise to unwrap the ID
+
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     return new NextResponse('Unauthorized', { status: 401 })
   }
 
+  // Fetch the exact invoice and its connected project
   const { data: invoice, error } = await supabase
     .from('invoices')
     .select(`
       *,
       projects ( title, client_name )
     `)
-    .eq('id', id)
+    .eq('id', params.id)
     .eq('user_id', user.id)
     .single()
 
@@ -39,48 +33,95 @@ export async function GET(
     return new NextResponse('Invoice not found', { status: 404 })
   }
 
-  const project = getProject(invoice.projects as ProjectJoin | ProjectJoin[] | null)
-  const clientName = project?.client_name ?? 'Unknown client'
-  const projectTitle = project?.title ?? 'Unknown project'
-
+  // Generate the PDF in memory
   const pdfBytes = await new Promise<Uint8Array>((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 50 })
-    const buffers: Buffer[] = []
-
-    doc.on('data', (chunk: Buffer) => buffers.push(chunk))
+    // Set standard A4 paper size with clean margins
+    const doc = new PDFDocument({ size: 'A4', margin: 50 })
+    const buffers: any[] = []
+    
+    doc.on('data', buffers.push.bind(buffers))
     doc.on('end', () => {
-      resolve(new Uint8Array(Buffer.concat(buffers)))
+      const pdfData = Buffer.concat(buffers)
+      resolve(new Uint8Array(pdfData)) 
     })
     doc.on('error', reject)
 
-    doc.fontSize(20).text('INVOICE', { align: 'right' })
-    doc.moveDown()
+    // --- DESIGN VARIABLES ---
+    const brandColor = '#0f172a' // Slate 900
+    const textColor = '#334155'  // Slate 700
+    const lightGray = '#e2e8f0'  // Slate 200
+    const startY = 50
 
-    doc.fontSize(12).text('Freelancer OS')
-    doc.text(`Generated: ${new Date().toLocaleDateString()}`)
-    doc.moveDown(2)
+    // --- HEADER ---
+    // Left side: Brand
+    doc.fillColor(brandColor).font('Helvetica-Bold').fontSize(24).text('FREELANCER OS', 50, startY)
+    doc.fillColor(textColor).font('Helvetica').fontSize(10).text('Professional Services', 50, startY + 28)
 
-    doc.fontSize(14).text('Billed To:')
-    doc.fontSize(12).text(`Client: ${clientName}`)
-    doc.text(`Project: ${projectTitle}`)
-    doc.moveDown(2)
+    // Right side: INVOICE title
+    doc.fillColor(brandColor).font('Helvetica-Bold').fontSize(28).text('INVOICE', 350, startY, { align: 'right' })
+    doc.fillColor(textColor).font('Helvetica').fontSize(10).text(`INV-${invoice.id.substring(0, 8).toUpperCase()}`, 350, startY + 32, { align: 'right' })
 
-    doc.text(`Issue Date: ${invoice.issue_date}`)
-    doc.text(`Due Date: ${invoice.due_date}`)
-    doc.text(`Status: ${String(invoice.status).toUpperCase()}`)
-    doc.moveDown(2)
+    // Divider Line
+    doc.moveTo(50, 110).lineTo(545, 110).lineWidth(1).strokeColor(lightGray).stroke()
 
-    doc
-      .fontSize(16)
-      .text(`Total Amount: $${Number(invoice.amount).toFixed(2)}`, { underline: true })
+    // --- CLIENT & INVOICE DETAILS ---
+    const detailsY = 140
+
+    // Billed To
+    doc.fillColor(brandColor).font('Helvetica-Bold').fontSize(12).text('Billed To:', 50, detailsY)
+    doc.fillColor(textColor).font('Helvetica').fontSize(11).text(invoice.projects.client_name, 50, detailsY + 20)
+    doc.text(`Project: ${invoice.projects.title}`, 50, detailsY + 35)
+
+    // Meta Details
+    doc.fillColor(brandColor).font('Helvetica-Bold').fontSize(12).text('Invoice Details:', 350, detailsY)
+    
+    doc.fillColor(textColor).font('Helvetica-Bold').fontSize(10).text('Issue Date:', 350, detailsY + 20)
+    doc.font('Helvetica').text(invoice.issue_date, 450, detailsY + 20)
+
+    doc.font('Helvetica-Bold').text('Due Date:', 350, detailsY + 35)
+    doc.font('Helvetica').text(invoice.due_date, 450, detailsY + 35)
+
+    doc.font('Helvetica-Bold').text('Status:', 350, detailsY + 50)
+    doc.font('Helvetica').text(invoice.status.toUpperCase(), 450, detailsY + 50)
+
+    // --- LINE ITEMS TABLE (Stylized) ---
+    const tableY = 250
+    
+    // Table Header Background
+    doc.rect(50, tableY, 495, 30).fillColor(brandColor).fill()
+    
+    // Table Header Text
+    doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(10)
+    doc.text('DESCRIPTION', 60, tableY + 10)
+    doc.text('AMOUNT', 400, tableY + 10, { width: 135, align: 'right' })
+
+    // Table Row
+    const rowY = tableY + 45
+    doc.fillColor(textColor).font('Helvetica').fontSize(11)
+    doc.text(`Professional services for ${invoice.projects.title}`, 60, rowY)
+    doc.text(`$${Number(invoice.amount).toFixed(2)}`, 400, rowY, { width: 135, align: 'right' })
+
+    // Bottom Table Border
+    doc.moveTo(50, rowY + 25).lineTo(545, rowY + 25).lineWidth(1).strokeColor(lightGray).stroke()
+
+    // --- TOTAL AMOUNT ---
+    const totalY = rowY + 45
+    doc.rect(330, totalY - 10, 215, 40).fillColor('#f8fafc').fill() // Light background for total
+    
+    doc.fillColor(brandColor).font('Helvetica-Bold').fontSize(14).text('Total Due:', 340, totalY)
+    doc.fillColor('#16a34a').font('Helvetica-Bold').fontSize(14).text(`$${Number(invoice.amount).toFixed(2)}`, 400, totalY, { width: 135, align: 'right' }) // Green total
+
+    // --- FOOTER ---
+    doc.fillColor(textColor).font('Helvetica-Oblique').fontSize(10).text('Thank you for your business.', 50, 700, { align: 'center' })
 
     doc.end()
   })
 
-  return new NextResponse(Buffer.from(pdfBytes), {
+  // Return the file to the browser
+  return new NextResponse(pdfBytes, {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="invoice-${id.substring(0, 8)}.pdf"`,
+      'Content-Disposition': `inline; filename="invoice-${invoice.id.substring(0, 8)}.pdf"`,
     },
   })
 }

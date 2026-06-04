@@ -6,8 +6,11 @@ import { CSPostHogProvider } from './providers'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Freelancer OS',
-  description: 'Manage your freelance business',
+  title: 'Freelancer OS | Manage Projects & Invoices',
+  description: 'The complete operating system for independent professionals. Track time, manage projects, and generate invoices seamlessly.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { SubmitButton } from '@/components/submit-button'
 import { Download } from 'lucide-react'
 import {
   Table,
@@ -125,7 +126,7 @@ export default async function InvoicesPage({
               <Input type="date" id="due_date" name="due_date" required disabled={!hasProjects} />
             </div>
 
-            <Button type="submit" disabled={!hasProjects}>Generate Invoice</Button>
+            <SubmitButton disabled={!hasProjects}>Generate Invoice</SubmitButton>
           </form>
         </CardContent>
       </Card>

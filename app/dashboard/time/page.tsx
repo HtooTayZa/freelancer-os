@@ -4,6 +4,7 @@ import { createTimeEntry } from './actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { SubmitButton } from '@/components/submit-button'
 import {
   Table,
   TableBody,
@@ -106,7 +107,7 @@ export default async function TimeTrackingPage({
               <Input type="text" id="description" name="description" placeholder="What did you work on?" disabled={!hasProjects} />
             </div>
 
-            <Button type="submit" disabled={!hasProjects}>Log Time</Button>
+            <SubmitButton disabled={!hasProjects}>Log Time</SubmitButton>
           </form>
         </CardContent>
       </Card>
