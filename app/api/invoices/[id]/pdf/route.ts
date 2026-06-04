@@ -4,7 +4,6 @@ import PDFDocument from 'pdfkit'
 
 // Force Next.js to use the Node environment
 export const runtime = 'nodejs'
-
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> } // 1. Tell TypeScript it is a Promise
@@ -118,7 +117,7 @@ export async function GET(
   })
 
   // Return the file to the browser
-  return new NextResponse(pdfBytes, {
+  return new Response(pdfBytes as BodyInit, {
     headers: {
       'Content-Type': 'application/pdf',
       'Content-Disposition': `inline; filename="invoice-${invoice.id.substring(0, 8)}.pdf"`,
