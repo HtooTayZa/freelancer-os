@@ -18,7 +18,13 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
-      run: npx playwright test
+        run: npx playwright test
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: "https://abcdefghijklmnop.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.dummy.key"
+          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy_key"
+          NEXT_PUBLIC_POSTHOG_HOST: "https://app.posthog.com"
+          
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
       with:
