@@ -54,7 +54,7 @@ export default async function TimeTrackingPage({
         <p className="text-slate-600">Log billable hours against your active projects.</p>
       </div>
       
-      <LiveTimer />
+      <LiveTimer projects={projects} />
       {queryError && (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {queryError}
