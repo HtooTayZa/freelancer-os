@@ -1,49 +1,116 @@
 # Freelancer OS
 
-A Next.js dashboard for managing freelance projects, built with Supabase Auth and shadcn/ui.
+Freelancer OS is a streamlined, data-driven command center built for independent professionals to manage the entire lifecycle of their business—from project inception to final billing. By unifying time tracking, project management, and invoice generation in a single interface, it eliminates context switching and provides real-time visibility into business performance.
 
-## Prerequisites
+## Key Features
 
-- Node.js 18+
-- A [Supabase](https://supabase.com) project
+* **Executive Overview:** A high-level business command center visualizing outstanding revenue, active projects, and lifetime billable hours.
+* **Precision Time Tracking:** A high-fidelity live timer that logs precise fractional hours, ensuring accurate billing without unnecessary rounding.
+* **Project Management:** A structured directory to track engagement status and client history.
+* **End-to-End Invoicing:** Generate, manage, and track invoices with status-driven automation.
+* **Analytics-Ready:** Built-in tracking integration to monitor business performance.
 
-## Setup
+## Tech Stack
 
-1. Clone the repository and install dependencies:
+* **Framework:** [Next.js](https://nextjs.org/) (App Router)
+* **Database & Auth:** [Supabase](https://supabase.com/) (PostgreSQL & Row Level Security)
+* **Styling:** [Tailwind CSS](https://tailwindcss.com/) & [Shadcn UI](https://ui.shadcn.com/)
+* **Testing:** [Playwright](https://playwright.dev/) (E2E)
+* **Analytics:** [PostHog](https://posthog.com/)
+* **Deployment:** [Vercel](https://vercel.com/)
 
+## Getting Started
+
+### Prerequisites
+
+* Node.js 18.x or higher
+* Supabase Account
+* PostHog Project Key
+
+### Installation
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/your-username/freelancer-os.git
+cd freelancer-os
+
+```
+
+
+
+```
+
+2. **Install dependencies:**
    ```bash
    npm install
-   ```
 
-2. Copy the environment template and fill in your Supabase credentials:
+```
 
-   ```bash
-   cp .env.example .env.local
-   ```
+3. **Environment Setup:**
+Copy the example environment file and populate your credentials:
+```bash
+cp .env.example .env.local
 
-   Get `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` from Supabase → Project Settings → API.
+```
 
-3. Run the database migrations in order (see [supabase/README.md](supabase/README.md)).
 
-4. Start the development server:
 
+```
+   *Required variables:*
+   * `NEXT_PUBLIC_SUPABASE_URL`
+   * `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   * `NEXT_PUBLIC_POSTHOG_KEY`
+
+4. **Run the development server:**
    ```bash
    npm run dev
-   ```
 
-5. Open [http://localhost:3000](http://localhost:3000), sign up or log in, and create a project under **Projects**.
+```
 
-## Project structure
+## Testing & Quality Assurance
 
-- `app/` — pages, server actions, and API routes (e.g. invoice PDFs)
-- `components/ui/` — shadcn/ui components
-- `lib/` — shared utilities
-- `supabase/migrations/` — SQL schema for Supabase (run in order; see `supabase/README.md`)
-- `utils/supabase/` — Supabase server client and session middleware
+Freelancer OS employs an automated CI/CD pipeline using **Playwright** to ensure that critical paths (authentication and database connectivity) remain operational.
 
-## Scripts
+* **Run E2E tests:**
+```bash
 
-- `npm run dev` — development server
-- `npm run build` — production build
-- `npm run start` — run production build
-- `npm run lint` — ESLint
+```
+
+
+
+npx playwright test
+
+```
+*   **UI Test Mode:**
+    ```bash
+npx playwright test --ui
+
+```
+
+## Project Structure
+
+```text
+freelancer-os/
+├── app/                  # Application routes and layouts
+│   ├── dashboard/        # Main application workspace
+│   ├── login/            # Authentication logic
+│   └── api/              # Backend server actions
+├── components/           # Reusable UI components (Shadcn)
+├── lib/                  # Utility functions and project logic
+├── supabase/             # Database migrations and schema
+├── e2e/                  # Playwright end-to-end tests
+└── utils/                # Supabase server/middleware utilities
+
+```
+
+## Roadmap & Maintenance
+
+* [x] **Core Workflow:** Projects, Time, Invoices integrated.
+* [x] **UX/UI:** Split-pane design system implemented.
+* [x] **CI/CD:** Automated testing environment stabilized.
+* [ ] **Feature:** Multi-currency invoice support.
+* [ ] **Feature:** Client portal integration.
+
+---
+
+*Created by Htoo Tay Za.*
