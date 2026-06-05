@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { ProjectForm } from './project-form'
 import { StatusDropdown } from './status-dropdown'
+import { ProjectFilter } from './project-filter'
 import {
   Table,
   TableBody,
@@ -17,13 +18,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { ClientInviteButton } from './client-invite'
 
 export default async function ProjectsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; q?: string }>
 }) {
-  const { error: queryError } = await searchParams
+  // Await the searchParams to safely extract the query and errors
+  const { error: queryError, q: searchQuery } = await searchParams
+  
   const supabase = await createClient()
   const {
     data: { user },
@@ -33,17 +37,28 @@ export default async function ProjectsPage({
     redirect('/login')
   }
 
-  const { data: projects, error: fetchError } = await supabase
+  // Build the dynamic Supabase query
+  let query = supabase
     .from('projects')
     .select('*')
     .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
+
+  // Apply the search filter if a user typed in the ProjectFilter search bar
+  if (searchQuery) {
+    query = query.ilike('title', `%${searchQuery}%`)
+  }
+
+  const { data: projects, error: fetchError } = await query.order('created_at', { ascending: false })
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Projects</h2>
-        <p className="text-slate-600">Manage your clients and active work.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Projects</h2>
+          <p className="text-slate-600">Manage your clients and active work.</p>
+        </div>
+        {/* NEW: Client Invite Simulation Button */}
+        <ClientInviteButton />
       </div>
 
       {queryError && (
@@ -54,16 +69,12 @@ export default async function ProjectsPage({
 
       {fetchError && (
         <p className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Could not load projects: {fetchError.message}. If the table does not
-          exist yet, run{' '}
-          <code className="text-xs">
-            supabase/migrations/001_create_projects.sql
-          </code>{' '}
-          through{' '}
-          <code className="text-xs">003_fix_projects_user_fk.sql</code> in the Supabase
-          SQL Editor (see supabase/README.md).
+          Could not load projects: {fetchError.message}
         </p>
       )}
+
+      {/* NEW: Interactive Search Filter */}
+      <ProjectFilter />
 
       <Card>
         <CardHeader>
@@ -73,6 +84,7 @@ export default async function ProjectsPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* PostHog Tracked Form */}
           <ProjectForm />
         </CardContent>
       </Card>
@@ -95,7 +107,9 @@ export default async function ProjectsPage({
                     colSpan={4}
                     className="py-8 text-center text-slate-500"
                   >
-                    No projects found. Create your first one above.
+                    {searchQuery 
+                      ? "No projects match your search." 
+                      : "No projects found. Create your first one above."}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -106,7 +120,11 @@ export default async function ProjectsPage({
                     </TableCell>
                     <TableCell>{project.client_name}</TableCell>
                     <TableCell>
-                      <StatusDropdown projectId={project.id} currentStatus={project.status} />
+                      {/* NEW: PostHog Tracked Status Dropdown */}
+                      <StatusDropdown 
+                        projectId={project.id} 
+                        currentStatus={project.status} 
+                      />
                     </TableCell>
                     <TableCell className="text-right">
                       {new Date(project.created_at).toLocaleDateString()}
