@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { DownloadButton } from './download-button'
 import { InvoiceForm } from './invoice-form'
+import { InvoiceStatusDropdown } from './invoice-status'
 
 import {
   Table,
@@ -106,12 +107,7 @@ export default async function InvoicesPage({
                   <TableCell className="font-medium">{projectTitle(invoice.projects)}</TableCell>
                   <TableCell>${invoice.amount.toFixed(2)}</TableCell>
                   <TableCell>
-                    <Badge variant={
-                      invoice.status === 'paid' ? 'default' : 
-                      invoice.status === 'sent' ? 'secondary' : 'outline'
-                    }>
-                      {invoice.status}
-                    </Badge>
+                    <InvoiceStatusDropdown invoiceId={invoice.id} currentStatus={invoice.status} />
                   </TableCell>
                   <TableCell className="text-right text-slate-500">{invoice.due_date}</TableCell>
                   <TableCell className="text-center">
