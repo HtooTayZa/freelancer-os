@@ -13,9 +13,13 @@ type Project = {
   title: string
 }
 
-export function TimeForm({ projects, hasProjects }: { projects: Project[] | null, hasProjects: boolean | null }) {
+// FIX: Removed 'hasProjects' from the expected props
+export function TimeForm({ projects }: { projects: Project[] | null }) {
   const posthog = usePostHog()
   const formRef = useRef<HTMLFormElement>(null)
+
+  // FIX: Calculate hasProjects internally based on the projects array
+  const hasProjects = projects !== null && projects.length > 0
 
   return (
     <form 
@@ -39,7 +43,7 @@ export function TimeForm({ projects, hasProjects }: { projects: Project[] | null
           id="project_id" 
           required
           disabled={!hasProjects}
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
         >
           <option value="">Select a project...</option>
           {projects?.map((p) => (
@@ -50,17 +54,39 @@ export function TimeForm({ projects, hasProjects }: { projects: Project[] | null
       
       <div className="grid w-full max-w-[150px] items-center gap-1.5">
         <Label htmlFor="date">Date</Label>
-        <Input type="date" id="date" name="date" required disabled={!hasProjects} defaultValue={new Date().toISOString().split('T')[0]} />
+        <Input 
+          type="date" 
+          id="date" 
+          name="date" 
+          required 
+          disabled={!hasProjects} 
+          defaultValue={new Date().toISOString().split('T')[0]} 
+        />
       </div>
 
       <div className="grid w-full max-w-[120px] items-center gap-1.5">
         <Label htmlFor="duration_hours">Hours</Label>
-        <Input type="number" step="0.25" min="0.25" id="duration_hours" name="duration_hours" placeholder="e.g. 2.5" required disabled={!hasProjects} />
+        <Input 
+          type="number" 
+          step="0.25" 
+          min="0.25" 
+          id="duration_hours" 
+          name="duration_hours" 
+          placeholder="e.g. 2.5" 
+          required 
+          disabled={!hasProjects} 
+        />
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label htmlFor="description">Description (Optional)</Label>
-        <Input type="text" id="description" name="description" placeholder="What did you work on?" disabled={!hasProjects} />
+        <Input 
+          type="text" 
+          id="description" 
+          name="description" 
+          placeholder="What did you work on?" 
+          disabled={!hasProjects} 
+        />
       </div>
 
       <SubmitButton disabled={!hasProjects}>Log Time</SubmitButton>
