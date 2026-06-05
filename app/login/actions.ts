@@ -62,3 +62,11 @@ export async function signup(formData: FormData) {
   revalidatePath('/', 'layout')
   redirect('/dashboard')
 }
+
+export async function signOutUser() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  
+  // Redirect back to the login page after clearing the session
+  redirect('/login')
+}
