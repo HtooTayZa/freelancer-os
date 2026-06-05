@@ -47,3 +47,12 @@ export async function createInvoice(formData: FormData) {
   revalidatePath('/dashboard/invoices')
   redirect('/dashboard/invoices')
 }
+
+export async function updateInvoiceStatus(id: string, status: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Unauthorized')
+
+  await supabase.from('invoices').update({ status }).eq('id', id).eq('user_id', user.id)
+  revalidatePath('/dashboard/invoices')
+}

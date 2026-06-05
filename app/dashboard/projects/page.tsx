@@ -1,10 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { createProject } from './actions'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
-import { SubmitButton } from '@/components/submit-button'
+import { ProjectForm } from './project-form'
+import { StatusDropdown } from './status-dropdown'
 import {
   Table,
   TableBody,
@@ -76,33 +73,7 @@ export default async function ProjectsPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form
-            action={createProject}
-            className="flex flex-col gap-4 md:flex-row md:items-end"
-          >
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="title">Project Title</Label>
-              <Input
-                type="text"
-                id="title"
-                name="title"
-                placeholder="e.g. Website Redesign"
-                required
-              />
-            </div>
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="client_name">Client Name</Label>
-              <Input
-                type="text"
-                id="client_name"
-                name="client_name"
-                placeholder="e.g. Acme Corp"
-                required
-              />
-            </div>
-            <input type="hidden" name="status" value="planning" />
-            <SubmitButton>Create Project</SubmitButton>
-          </form>
+          <ProjectForm />
         </CardContent>
       </Card>
 
@@ -135,13 +106,7 @@ export default async function ProjectsPage({
                     </TableCell>
                     <TableCell>{project.client_name}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          project.status === 'active' ? 'default' : 'secondary'
-                        }
-                      >
-                        {project.status}
-                      </Badge>
+                      <StatusDropdown projectId={project.id} currentStatus={project.status} />
                     </TableCell>
                     <TableCell className="text-right">
                       {new Date(project.created_at).toLocaleDateString()}

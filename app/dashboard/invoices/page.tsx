@@ -1,12 +1,9 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { createInvoice } from './actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { SubmitButton } from '@/components/submit-button'
-import { Download } from 'lucide-react'
+import { DownloadButton } from './download-button'
+import { InvoiceForm } from './invoice-form'
+
 import {
   Table,
   TableBody,
@@ -31,14 +28,14 @@ export default async function InvoicesPage({
     redirect('/login')
   }
 
-  // 1. Fetch projects for the dropdown
+  // 1. Fetch projects for the dropdown selections
   const { data: projects } = await supabase
     .from('projects')
     .select('id, title')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
-  // 2. Fetch invoices with their associated project titles
+  // 2. Fetch invoices with structural project joins
   const { data: invoices } = await supabase
     .from('invoices')
     .select(`
@@ -67,7 +64,7 @@ export default async function InvoicesPage({
         </p>
       )}
 
-      {/* Creation Form */}
+      {/* Modernized Creation Form Workspace */}
       <Card>
         <CardHeader>
           <CardTitle>Create Invoice</CardTitle>
@@ -78,60 +75,11 @@ export default async function InvoicesPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={createInvoice} className="flex flex-col gap-4 md:flex-row md:items-end flex-wrap">
-            <div className="grid w-full max-w-xs items-center gap-1.5">
-              <Label htmlFor="project_id">Project</Label>
-              <select 
-                name="project_id" 
-                id="project_id" 
-                required
-                disabled={!hasProjects}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Select a project...</option>
-                {projects?.map((p) => (
-                  <option key={p.id} value={p.id}>{p.title}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="grid w-full max-w-[150px] items-center gap-1.5">
-              <Label htmlFor="amount">Amount ($)</Label>
-              <Input type="number" step="0.01" min="1" id="amount" name="amount" placeholder="e.g. 1500.00" required disabled={!hasProjects} />
-            </div>
-
-            <div className="grid w-full max-w-[150px] items-center gap-1.5">
-              <Label htmlFor="status">Status</Label>
-              <select 
-                name="status" 
-                id="status" 
-                required
-                disabled={!hasProjects}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-                defaultValue="draft"
-              >
-                <option value="draft">Draft</option>
-                <option value="sent">Sent</option>
-                <option value="paid">Paid</option>
-              </select>
-            </div>
-
-            <div className="grid w-full max-w-[150px] items-center gap-1.5">
-              <Label htmlFor="issue_date">Issue Date</Label>
-              <Input type="date" id="issue_date" name="issue_date" required disabled={!hasProjects} defaultValue={new Date().toISOString().split('T')[0]} />
-            </div>
-
-            <div className="grid w-full max-w-[150px] items-center gap-1.5">
-              <Label htmlFor="due_date">Due Date</Label>
-              <Input type="date" id="due_date" name="due_date" required disabled={!hasProjects} />
-            </div>
-
-            <SubmitButton disabled={!hasProjects}>Generate Invoice</SubmitButton>
-          </form>
+          <InvoiceForm projects={projects} hasProjects={!!hasProjects} />
         </CardContent>
       </Card>
 
-      {/* Data Table */}
+      {/* Relational Data Workspace */}
       <Card>
         <Table>
           <TableHeader>
@@ -141,7 +89,7 @@ export default async function InvoicesPage({
               <TableHead>Amount</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Due Date</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
+              <TableHead className="w-[140px] text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -166,13 +114,10 @@ export default async function InvoicesPage({
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right text-slate-500">{invoice.due_date}</TableCell>
-                  <TableCell>
-                    <a href={`/api/invoices/${invoice.id}/pdf`} target="_blank" rel="noopener noreferrer">
-                    <Button variant="ghost" size="icon">
-                        <Download className="h-4 w-4 text-slate-500 hover:text-slate-900" />
-                    </Button>
-                    </a>
-                </TableCell>
+                  <TableCell className="text-center">
+                    {/* Replaced generic link with custom PostHog tracked download action node */}
+                    <DownloadButton invoiceId={invoice.id} />
+                  </TableCell>
                 </TableRow>
               ))
             )}

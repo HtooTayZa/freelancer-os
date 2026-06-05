@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Briefcase, Clock, DollarSign, Receipt } from 'lucide-react'
 import { projectTitle } from '@/lib/project-join'
+import { DashboardViewTracker } from './view-tracker'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -45,7 +46,7 @@ export default async function DashboardPage() {
           Welcome back, <strong>{user.email}</strong>. Here is your business at a glance.
         </p>
       </div>
-
+      <DashboardViewTracker />
       {/* Metrics Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

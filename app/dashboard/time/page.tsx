@@ -1,9 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import { createTimeEntry } from './actions'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { SubmitButton } from '@/components/submit-button'
+import { TimeForm } from './time-form'
+import { LiveTimer } from './live-timer'
 import {
   Table,
   TableBody,
@@ -14,7 +12,6 @@ import {
 } from '@/components/ui/table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { projectTitle } from '@/lib/project-join'
-
 export default async function TimeTrackingPage({
   searchParams,
 }: {
@@ -56,13 +53,14 @@ export default async function TimeTrackingPage({
         <h2 className="text-3xl font-bold tracking-tight">Time Tracking</h2>
         <p className="text-slate-600">Log billable hours against your active projects.</p>
       </div>
-
+      
+      <LiveTimer />
       {queryError && (
         <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {queryError}
         </p>
       )}
-
+      
       {/* Creation Form */}
       <Card>
         <CardHeader>
@@ -74,40 +72,7 @@ export default async function TimeTrackingPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={createTimeEntry} className="flex flex-col gap-4 md:flex-row md:items-end">
-            <div className="grid w-full max-w-xs items-center gap-1.5">
-              <Label htmlFor="project_id">Project</Label>
-              <select 
-                name="project_id" 
-                id="project_id" 
-                required
-                disabled={!hasProjects}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Select a project...</option>
-                {projects?.map((p) => (
-                  <option key={p.id} value={p.id}>{p.title}</option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="grid w-full max-w-[150px] items-center gap-1.5">
-              <Label htmlFor="date">Date</Label>
-              <Input type="date" id="date" name="date" required disabled={!hasProjects} defaultValue={new Date().toISOString().split('T')[0]} />
-            </div>
-
-            <div className="grid w-full max-w-[120px] items-center gap-1.5">
-              <Label htmlFor="duration_hours">Hours</Label>
-              <Input type="number" step="0.25" min="0.25" id="duration_hours" name="duration_hours" placeholder="e.g. 2.5" required disabled={!hasProjects} />
-            </div>
-
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="description">Description (Optional)</Label>
-              <Input type="text" id="description" name="description" placeholder="What did you work on?" disabled={!hasProjects} />
-            </div>
-
-            <SubmitButton disabled={!hasProjects}>Log Time</SubmitButton>
-          </form>
+          <TimeForm projects={projects} hasProjects={hasProjects} />
         </CardContent>
       </Card>
 
@@ -133,7 +98,6 @@ export default async function TimeTrackingPage({
               timeEntries.map((entry) => (
                 <TableRow key={entry.id}>
                   <TableCell className="font-medium">{entry.date}</TableCell>
-                  {/* We access the joined project title like this: */}
                   <TableCell>{projectTitle(entry.projects)}</TableCell>
                   <TableCell className="text-slate-500">{entry.description || '-'}</TableCell>
                   <TableCell className="text-right font-semibold">{entry.duration_hours}</TableCell>

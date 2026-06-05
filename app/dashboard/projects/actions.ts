@@ -26,7 +26,7 @@ export async function createProject(formData: FormData) {
 
   const title = (formData.get('title') as string)?.trim()
   const client_name = (formData.get('client_name') as string)?.trim()
-  const status = (formData.get('status') as string)?.trim() || 'planning'
+  const status = (formData.get('status') as string)?.trim() || 'todo' // Updated default fallback
 
   if (!title || !client_name) {
     redirect(
@@ -55,5 +55,30 @@ export async function createProject(formData: FormData) {
   }
 
   revalidatePath('/dashboard/projects')
+  revalidatePath('/dashboard') // NEW: Syncs the main overview page
   redirect('/dashboard/projects')
+}
+
+// NEW: Action to instantly update status from the interactive table dropdown
+export async function updateProjectStatus(id: string, status: string) {
+  const supabase = await createClient()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    throw new Error('Unauthorized')
+  }
+
+  const { error } = await supabase
+    .from('projects')
+    .update({ status })
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Failed to update status:', error.message)
+    throw new Error('Failed to update status')
+  }
+
+  revalidatePath('/dashboard/projects')
+  revalidatePath('/dashboard') // NEW: Syncs the main overview page
 }
